@@ -18,7 +18,7 @@ Resources:
       InstanceTenancy: default      # optional
       Tags:                # optional, list of Tag
         - Key: Name     # optional
-          Value: !Ref VpcName     # optional
+          Value: !Sub ${VpcName}     # optional
 
   PublicSubnet1:
     Type: AWS::EC2::Subnet
@@ -148,7 +148,7 @@ Resources:
       SubnetId: !Ref PublicSubnet1     # optional
       Tags:                # optional, list of Tag
         - Key: Name     # optional
-          Value: !Ref ec2Name     # optional
+          Value: !Sub ${ec2Name}     # optional
 
 Outputs:
   BucketName:
