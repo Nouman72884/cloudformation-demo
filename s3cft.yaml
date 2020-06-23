@@ -2,6 +2,163 @@ AWSTemplateFormatVersion: '2010-09-09'
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16     # required
+      EnableDnsHostnames: false     # optional
+      EnableDnsSupport: true     # optional
+      InstanceTenancy: default      # optional
+      Tags:                # optional, list of Tag
+        - Key: String     # optional
+          Value: String     # optional
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]     # optional
+      CidrBlock: 10.0.1.0/24     # required
+      MapPublicIpOnLaunch: true     # optional
+      Tags:                # optional, list of Tag
+        - Key: Name     # optional
+          Value: Web_Server     # optional
+      VpcId: !Ref VPC     # required
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]     # optional
+      CidrBlock: 10.0.2.0/24     # required
+      MapPublicIpOnLaunch: false     # optional
+      Tags:                # optional, list of Tag
+        - Key: Name     # optional
+          Value: DBServer     # optional
+      VpcId: !Ref VPC     # required
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:                # optional, list of Tag
+        - Key: Name     # optional
+          Value: InternetGateway     # optional
+
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway    # optional
+      VpcId: !Ref VPC     # required
+
+  NatGW:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGWEIP.AllocationId     # required
+      SubnetId: !Ref PublicSubnet1     # required
+
+
+  NatGWEIP:
+    Type: AWS::EC2::EIP
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      Domain: VPC
+
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      Tags:                # optional, list of Tag
+        - Key: Name     # optional
+          Value: Public_Route_Table     # optional
+      VpcId: !Ref VPC      # required
+
+
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: Private_Route_Table
+
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGW
+
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+
+
+  WebServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to client host
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+       - IpProtocol: tcp
+         FromPort: 80
+         ToPort: 80
+         CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+       - IpProtocol: tcp
+         FromPort: 80
+         ToPort: 80
+         CidrIp: 0.0.0.0/0
+
+  DBServerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to DB instance
+      VpcId:
+         Ref: VPC
+      SecurityGroupIngress:
+       - IpProtocol: All
+         FromPort: All
+         ToPort: All
+         CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+       - IpProtocol: All
+         FromPort: All
+         ToPort: All
+         CidrIp: 0.0.0.0/0
+
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]     # optional
+      ImageId: ami-07ebfd5b3428b6f4d     # required
+      InstanceType: t2.micro
+      KeyName: nouman_pk     # optional
+      SecurityGroupIds:
+        - !GetAtt "WebServerSG.GroupId"               # optional, list of String
+      SubnetId: !Ref PublicSubnet1     # optional
+      Tags:                # optional, list of Tag
+        - Key: Name     # optional
+          Value: WebSS_Nouman     # optional
+
 Outputs:
   BucketName:
     Value: !Ref 'S3Bucket'
