@@ -1,4 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  VpcName:
+    Description: Please enter the IP range     # optional
+    Type: String     # required
+  ec2Name:
+    Description: Please enter the IP range     # optional
+    Type: String     # required
 Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -10,8 +17,8 @@ Resources:
       EnableDnsSupport: true     # optional
       InstanceTenancy: default      # optional
       Tags:                # optional, list of Tag
-        - Key: String     # optional
-          Value: String     # optional
+        - Key: Name     # optional
+          Value: !Ref VpcName     # optional
 
   PublicSubnet1:
     Type: AWS::EC2::Subnet
@@ -129,19 +136,19 @@ Resources:
          CidrIp: 0.0.0.0/0
 
 
-  # WebServerInstance:
-  #   Type: AWS::EC2::Instance
-  #   Properties:
-  #     AvailabilityZone: !Select [ 0, !GetAZs '' ]     # optional
-  #     ImageId: ami-07ebfd5b3428b6f4d     # required
-  #     InstanceType: t2.micro
-  #     KeyName: nouman_pk     # optional
-  #     SecurityGroupIds:
-  #       - !GetAtt "WebServerSG.GroupId"               # optional, list of String
-  #     SubnetId: !Ref PublicSubnet1     # optional
-  #     Tags:                # optional, list of Tag
-  #       - Key: Name     # optional
-  #         Value: WebSS_Nouman     # optional
+  WebServerInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]     # optional
+      ImageId: ami-07ebfd5b3428b6f4d     # required
+      InstanceType: t2.micro
+      KeyName: nouman_pk     # optional
+      SecurityGroupIds:
+        - !GetAtt "WebServerSG.GroupId"               # optional, list of String
+      SubnetId: !Ref PublicSubnet1     # optional
+      Tags:                # optional, list of Tag
+        - Key: Name     # optional
+          Value: !Ref ec2Name     # optional
 
 Outputs:
   BucketName:
