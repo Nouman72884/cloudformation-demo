@@ -128,20 +128,20 @@ Resources:
          ToPort: 80
          CidrIp: 0.0.0.0/0
 
-  
-  WebServerInstance:
-    Type: AWS::EC2::Instance
-    Properties:
-      AvailabilityZone: !Select [ 0, !GetAZs '' ]     # optional
-      ImageId: ami-07ebfd5b3428b6f4d     # required
-      InstanceType: t2.micro
-      KeyName: nouman_pk     # optional
-      SecurityGroupIds:
-        - !GetAtt "WebServerSG.GroupId"               # optional, list of String
-      SubnetId: !Ref PublicSubnet1     # optional
-      Tags:                # optional, list of Tag
-        - Key: Name     # optional
-          Value: WebSS_Nouman     # optional
+
+  # WebServerInstance:
+  #   Type: AWS::EC2::Instance
+  #   Properties:
+  #     AvailabilityZone: !Select [ 0, !GetAZs '' ]     # optional
+  #     ImageId: ami-07ebfd5b3428b6f4d     # required
+  #     InstanceType: t2.micro
+  #     KeyName: nouman_pk     # optional
+  #     SecurityGroupIds:
+  #       - !GetAtt "WebServerSG.GroupId"               # optional, list of String
+  #     SubnetId: !Ref PublicSubnet1     # optional
+  #     Tags:                # optional, list of Tag
+  #       - Key: Name     # optional
+  #         Value: WebSS_Nouman     # optional
 
 Outputs:
   BucketName:
