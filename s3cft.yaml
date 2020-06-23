@@ -128,23 +128,7 @@ Resources:
          ToPort: 80
          CidrIp: 0.0.0.0/0
 
-  DBServerSG:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Allow http to DB instance
-      VpcId:
-         Ref: VPC
-      SecurityGroupIngress:
-       - IpProtocol: All
-         FromPort: All
-         ToPort: All
-         CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-       - IpProtocol: All
-         FromPort: All
-         ToPort: All
-         CidrIp: 0.0.0.0/0
-
+  
   WebServerInstance:
     Type: AWS::EC2::Instance
     Properties:
