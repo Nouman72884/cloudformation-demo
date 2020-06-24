@@ -28,7 +28,7 @@ Resources:
         Statement:
           -
             Effect: "Allow"
-            Action: "s3:*"
+            Action: "*"
             Resource: "*"
       PolicyName: AccessRolePolicy     # required
       Roles:            # optional, list of String
