@@ -7,6 +7,40 @@ Parameters:
     Description: Please enter the IP range     # optional
     Type: String     # required
 Resources:
+  AccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:      # required
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: '/'     # optional
+
+  AccessRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:      # required
+        Statement:
+          -
+            Effect: "Allow"
+            Action: "s3:*"
+            Resource: "*"
+      PolicyName: AccessRolePolicy     # required
+      Roles:            # optional, list of String
+        - Ref: AccessRole
+
+  AccessRoleProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: AccessRoleProfile     # optional
+      Path: '/'     # optional
+      Roles:                # required, list of String
+        - Ref: AccessRole
   S3Bucket:
     Type: AWS::S3::Bucket
   VPC:
@@ -143,6 +177,7 @@ Resources:
       ImageId: ami-07ebfd5b3428b6f4d     # required
       InstanceType: t2.micro
       KeyName: nouman_pk     # optional
+      IamInstanceProfile: !Ref AccessRoleProfile
       SecurityGroupIds:
         - !GetAtt "WebServerSG.GroupId"               # optional, list of String
       SubnetId: !Ref PublicSubnet1     # optional
